@@ -6,6 +6,17 @@
   "repository": "git@github.com:elPoeta/decentralized-crowdfunding-smart-contract.git",
   "author": "Leonardo Tosetto <leonardo.a.tosetto@gmail.com>",
   "license": "MIT",
+  "scripts": {
+    "compile": "hardhat compile",
+    "deploy": "hardhat deploy",
+    "deploy:mocks": "hardhat deploy --tags mocks",
+    "test": "hardhat test ./test/unit/*.spec.ts --network hardhat",
+    "test-staging": "hardhat test ./test/staging/*.spec.ts --network rinkeby",
+    "lint": "solhint 'contracts/*.sol'",
+    "lint:fix": "solhint 'contracts/**/*.sol' --fix",
+    "format": "prettier --write .",
+    "coverage": "hardhat coverage --solcoverjs ./.solcover.js"
+  },
   "dependencies": {
     "dotenv": "^16.0.1"
   },

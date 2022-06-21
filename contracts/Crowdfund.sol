@@ -2,11 +2,11 @@
 
 pragma solidity ^0.8.4;
 
-error Crowdfunding__InsufficientContribution(uint256 sent, uint256 required);
-error Crowdfunding__NotAproved();
-error Crowdfunding__HasComplete();
+error Crowdfund__InsufficientContribution(uint256 sent, uint256 required);
+error Crowdfund__NotAproved();
+error Crowdfund__HasComplete();
 
-contract Crowdfunding {
+contract Crowdfund {
     struct Request {
         string description;
         uint256 amount;
@@ -34,7 +34,7 @@ contract Crowdfunding {
 
     function contibute() public payable {
         if (msg.value < s_minimumContribution)
-            revert Crowdfunding__InsufficientContribution({
+            revert Crowdfund__InsufficientContribution({
                 sent: msg.value,
                 required: s_minimumContribution
             });
@@ -61,15 +61,15 @@ contract Crowdfunding {
 
     function approveRequest(uint256 index) public {
         Request storage request = s_requests[index];
-        if (!s_approvers[msg.sender]) revert Crowdfunding__NotAproved();
-        if (s_approvals[index]) revert Crowdfunding__NotAproved();
+        if (!s_approvers[msg.sender]) revert Crowdfund__NotAproved();
+        if (s_approvals[index]) revert Crowdfund__NotAproved();
         request.approvalCount++;
     }
 
     function endRequest(uint256 index) public onlyOwner {
         Request storage request = s_requests[index];
         require(request.approvalCount > (s_approvalsCount / 2));
-        if (request.complete) revert Crowdfunding__HasComplete();
+        if (request.complete) revert Crowdfund__HasComplete();
         request.recipient.transfer(request.amount);
         request.complete = true;
     }

@@ -7,13 +7,13 @@ import "./Crowdfund.sol";
 contract CrowdfundFactory {
     Crowdfund[] private s_crowdfundsDeployed;
     address[] private s_crowdfundAddressesDeployed;
-    event crowdfundCreated(address crowdfundAddress, uint256 data);
+    event crowdfundCreated(address crowdfundAddress);
 
-    function createCrowdfund(uint256 _minimumContribution) external {
-        Crowdfund crowdfund = new Crowdfund(msg.sender, _minimumContribution);
+    function createCrowdfund() external {
+        Crowdfund crowdfund = new Crowdfund(msg.sender);
         s_crowdfundAddressesDeployed.push(address(crowdfund));
         s_crowdfundsDeployed.push(crowdfund);
-        emit crowdfundCreated(address(crowdfund), _minimumContribution);
+        emit crowdfundCreated(address(crowdfund));
     }
 
     function getCrowdfundDeployed() external view returns (Crowdfund[] memory) {

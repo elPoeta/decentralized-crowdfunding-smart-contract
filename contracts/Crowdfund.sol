@@ -103,7 +103,7 @@ contract Crowdfund {
         require(campaign.pledged >= campaign.goal, "pledged < goal");
         require(!campaign.claimed, "claimed");
 
-        uint256 commission = campaign.pledged / 100;
+        uint256 commission = campaign.goal / 100;
 
         address payable creator = payable(campaign.creator);
 
@@ -157,21 +157,6 @@ contract Crowdfund {
         emit Refund(_id, msg.sender, bal);
     }
 
-    // function approveRequest(uint256 index) public {
-    //     Request storage request = s_requests[index];
-    //     if (!s_approvers[msg.sender]) revert Crowdfund__NotAproved();
-    //     if (s_approvals[index]) revert Crowdfund__NotAproved();
-    //     request.approvalCount++;
-    // }
-
-    // function endRequest(uint256 index) public onlyOwner {
-    //     Request storage request = s_requests[index];
-    //     require(request.approvalCount > (s_approvalsCount / 2));
-    //     if (request.complete) revert Crowdfund__HasComplete();
-    //     request.recipient.transfer(request.amount);
-    //     request.complete = true;
-    // }
-
     function getOwner() public view returns (address) {
         return i_owner;
     }
@@ -190,5 +175,9 @@ contract Crowdfund {
         returns (Campaign memory)
     {
         return s_campaigns[index];
+    }
+
+    function getMyPledgedAmount(uint256 index) public view returns (uint256) {
+        return s_pledgedAmount[index][msg.sender];
     }
 }

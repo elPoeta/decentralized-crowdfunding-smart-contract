@@ -1,8 +1,7 @@
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
-import { assert, expect } from "chai";
-import { BigNumber } from "ethers";
-import { network, deployments, ethers } from "hardhat";
-import { Crowdfund, CrowdfundFactory } from "../../typechain-types";
+import { assert } from "chai";
+import { deployments, ethers } from "hardhat";
+import { CrowdfundFactory } from "../../typechain-types";
 
 describe("CrowdfundFactory Unit Tests", function () {
   let crowdfundFactory: CrowdfundFactory;

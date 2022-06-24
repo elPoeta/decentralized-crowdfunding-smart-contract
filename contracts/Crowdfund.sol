@@ -2,10 +2,6 @@
 
 pragma solidity ^0.8.4;
 
-error Crowdfund__NotOwner();
-error Crowdfund__InsufficientContribution(uint256 sent, uint256 required);
-error Crowdfund__NotAproved();
-error Crowdfund__HasComplete();
 error CrowdFund__TransferFailed();
 
 contract Crowdfund {
@@ -39,11 +35,6 @@ contract Crowdfund {
     uint256 private s_campaignCount;
     mapping(uint256 => Campaign) private s_campaigns;
     mapping(uint256 => mapping(address => uint256)) private s_pledgedAmount;
-
-    modifier onlyOwner() {
-        if (msg.sender != i_owner) revert Crowdfund__NotOwner();
-        _;
-    }
 
     constructor(address _owner) {
         i_owner = _owner;
@@ -89,7 +80,6 @@ contract Crowdfund {
             msg.value >= campaign.minimumContribution,
             "send more contribution"
         );
-
         campaign.pledged += msg.value;
         s_pledgedAmount[_id][msg.sender] += msg.value;
 
@@ -132,7 +122,6 @@ contract Crowdfund {
     function unpledge(uint256 _id, uint256 _amount) public {
         Campaign storage campaign = s_campaigns[_id];
         require(block.timestamp <= campaign.endAt, "ended");
-
         campaign.pledged -= _amount;
         s_pledgedAmount[_id][msg.sender] -= _amount;
         (bool success, ) = payable(msg.sender).call{value: _amount}("");
@@ -147,7 +136,6 @@ contract Crowdfund {
         Campaign memory campaign = s_campaigns[_id];
         require(block.timestamp > campaign.endAt, "not ended");
         require(campaign.pledged < campaign.goal, "pledged >= goal");
-
         uint256 bal = s_pledgedAmount[_id][msg.sender];
         s_pledgedAmount[_id][msg.sender] = 0;
         (bool success, ) = payable(msg.sender).call{value: bal}("");

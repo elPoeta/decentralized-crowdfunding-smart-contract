@@ -212,9 +212,7 @@ describe("Crowdfund Unit Tests", function () {
         await tx.wait(1);
         await network.provider.send("evm_increaseTime", [endTime + 1]);
         await network.provider.request({ method: "evm_mine", params: [] });
-        await expect(crowdfund.claim(1)).to.be.revertedWith(
-          "CrowdFund__NotGoal"
-        );
+        await expect(crowdfund.claim(1)).to.be.revertedWith("CrowdFund__Goal");
       });
 
       it("revert claim not ended", async () => {
@@ -295,6 +293,45 @@ describe("Crowdfund Unit Tests", function () {
       });
     });
 
-    describe("refund", () => {});
+    describe("refund", () => {
+      it("revert redund not ended", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [10]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        const tx = await crowdfundPledge.pledge(1, {
+          value: BigNumber.from("3000000000000000000"),
+        });
+        await tx.wait(1);
+        await expect(crowdfundPledge.refund(1)).to.be.revertedWith(
+          "CrowdFund__TimeFailing"
+        );
+      });
+
+      it("revert refund pledged >= goal", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [10]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        const tx = await crowdfundPledge.pledge(1, {
+          value: BigNumber.from("3000000000000000000"),
+        });
+        await tx.wait(1);
+        await network.provider.send("evm_increaseTime", [endTime + 1]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        await expect(crowdfund.refund(1)).to.be.revertedWith("CrowdFund__Goal");
+      });
+
+      it("valid refund ", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [10]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        const tx = await crowdfundPledge.pledge(1, {
+          value: BigNumber.from("300"),
+        });
+        await tx.wait(1);
+        await network.provider.send("evm_increaseTime", [endTime + 1]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        await expect(crowdfund.refund(1)).to.emit(crowdfund, "Refund");
+      });
+    });
   });
 });

@@ -133,6 +133,26 @@ describe("Crowdfund Unit Tests", function () {
         ).to.be.revertedWith("CrowdFund__MinimumContribution");
       });
 
+      it("revert not started", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await expect(
+          crowdfundPledge.pledge(1, {
+            value: BigNumber.from("10000"),
+          })
+        ).to.be.revertedWith("CrowdFund__TimeFailing");
+      });
+
+      it("revert ended", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [60 * 60 * 24 * 121]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        await expect(
+          crowdfundPledge.pledge(1, {
+            value: BigNumber.from("1000"),
+          })
+        ).to.be.revertedWith("CrowdFund__TimeFailing");
+      });
+
       it("valid contribution", async () => {
         const crowdfundPledge = crowdfundContract.connect(accounts[2]);
         await network.provider.send("evm_increaseTime", [10]);

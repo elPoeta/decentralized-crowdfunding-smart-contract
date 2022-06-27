@@ -3,8 +3,6 @@
 /* eslint-disable */
 export type { Crowdfund } from "./Crowdfund";
 export type { CrowdfundFactory } from "./CrowdfundFactory";
-export type { Greeter } from "./Greeter";
 export * as factories from "./factories";
 export { Crowdfund__factory } from "./factories/Crowdfund__factory";
 export { CrowdfundFactory__factory } from "./factories/CrowdfundFactory__factory";
-export { Greeter__factory } from "./factories/Greeter__factory";

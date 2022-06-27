@@ -3,4 +3,3 @@
 /* eslint-disable */
 export { Crowdfund__factory } from "./Crowdfund__factory";
 export { CrowdfundFactory__factory } from "./CrowdfundFactory__factory";
-export { Greeter__factory } from "./Greeter__factory";

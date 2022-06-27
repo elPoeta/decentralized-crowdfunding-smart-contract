@@ -8,6 +8,7 @@
   "license": "MIT",
   "scripts": {
     "compile": "hardhat compile",
+    "clean": "hardhat clean",
     "deploy": "hardhat deploy",
     "deploy:factory": "hardhat deploy --tags factory",
     "test": "hardhat test ./test/unit/*.test.ts --network hardhat",

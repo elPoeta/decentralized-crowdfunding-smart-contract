@@ -57,9 +57,54 @@ describe("Crowdfund Unit Tests", function () {
       const campaign = await crowdfund.getCampaignAtIndex(1);
       assert.equal(campaign.description, "Creative project");
     });
+
+    it("revert new campaign start at < now", async () => {
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const startTime = latestBlock.timestamp - 5;
+      const endTime = startTime + 10000;
+      await expect(
+        crowdfund.launchCampign(
+          "Creative project",
+          GOAL,
+          MINIMUM_CONTRIBUTION,
+          startTime,
+          endTime
+        )
+      ).to.be.revertedWith("CrowdFund__TimeFailing");
+    });
+
+    it("revert new campaign end at < start at", async () => {
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const startTime = latestBlock.timestamp + 5;
+      const endTime = startTime - 10;
+      await expect(
+        crowdfund.launchCampign(
+          "Creative project",
+          GOAL,
+          MINIMUM_CONTRIBUTION,
+          startTime,
+          endTime
+        )
+      ).to.be.revertedWith("CrowdFund__TimeFailing");
+    });
+
+    it("revert new campaign end at > max duration", async () => {
+      const latestBlock = await ethers.provider.getBlock("latest");
+      const startTime = latestBlock.timestamp + 5;
+      const endTime = startTime + (1000 * 60 * 60 * 24 * 121) / 1000;
+      await expect(
+        crowdfund.launchCampign(
+          "Creative project",
+          GOAL,
+          MINIMUM_CONTRIBUTION,
+          startTime,
+          endTime
+        )
+      ).to.be.revertedWith("CrowdFund__TimeFailing");
+    });
   });
 
-  describe("launch campaign", function () {
+  describe("Campaign", function () {
     let startTime: number;
     let endTime: number;
     beforeEach(async () => {
@@ -77,6 +122,17 @@ describe("Crowdfund Unit Tests", function () {
     });
 
     describe("pledge", function () {
+      it("revert minimum contribution", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [10]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        await expect(
+          crowdfundPledge.pledge(1, {
+            value: BigNumber.from("10"),
+          })
+        ).to.be.revertedWith("CrowdFund__MinimumContribution");
+      });
+
       it("valid contribution", async () => {
         const crowdfundPledge = crowdfundContract.connect(accounts[2]);
         await network.provider.send("evm_increaseTime", [10]);
@@ -90,7 +146,14 @@ describe("Crowdfund Unit Tests", function () {
     });
 
     describe("claim", function () {
-      it("claim contributions", async () => {
+      it("revert claim if not creator claimed", async () => {
+        const crowdfundClaim = crowdfundContract.connect(accounts[4]);
+        await expect(crowdfundClaim.claim(1)).to.be.revertedWith(
+          "CrowdFund__NotCreator"
+        );
+      });
+
+      it("valid crator claim", async () => {
         const crowdfundPledge = crowdfundContract.connect(accounts[2]);
         await network.provider.send("evm_increaseTime", [10]);
         await network.provider.request({ method: "evm_mine", params: [] });
@@ -101,6 +164,50 @@ describe("Crowdfund Unit Tests", function () {
         await network.provider.send("evm_increaseTime", [endTime + 1]);
         await network.provider.request({ method: "evm_mine", params: [] });
         await expect(crowdfund.claim(1)).to.emit(crowdfund, "Claim");
+      });
+
+      it("revert claim if was claimed", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [10]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        const tx = await crowdfundPledge.pledge(1, {
+          value: BigNumber.from("3000000000000000000"),
+        });
+        await tx.wait(1);
+        await network.provider.send("evm_increaseTime", [endTime + 1]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        await crowdfund.claim(1);
+        await expect(crowdfund.claim(1)).to.be.revertedWith(
+          "CrowdFund__HasClaimed"
+        );
+      });
+
+      it("revert claim not goal", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [10]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        const tx = await crowdfundPledge.pledge(1, {
+          value: BigNumber.from("300"),
+        });
+        await tx.wait(1);
+        await network.provider.send("evm_increaseTime", [endTime + 1]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        await expect(crowdfund.claim(1)).to.be.revertedWith(
+          "CrowdFund__NotGoal"
+        );
+      });
+
+      it("revert claim not ended", async () => {
+        const crowdfundPledge = crowdfundContract.connect(accounts[2]);
+        await network.provider.send("evm_increaseTime", [10]);
+        await network.provider.request({ method: "evm_mine", params: [] });
+        const tx = await crowdfundPledge.pledge(1, {
+          value: BigNumber.from("3000000000000000000"),
+        });
+        await tx.wait(1);
+        await expect(crowdfund.claim(1)).to.be.revertedWith(
+          "CrowdFund__TimeFailing"
+        );
       });
     });
   });

@@ -3,6 +3,15 @@
 pragma solidity ^0.8.4;
 
 error CrowdFund__TransferFailed();
+error CrowdFund__NotCreator(string message);
+error CrowdFund__MinimumContribution(
+    uint256 requiered,
+    uint256 actual,
+    string message
+);
+error CrowdFund__HasClaimed(string message);
+error CrowdFund__NotGoal(uint256 pledged, uint256 goal, string message);
+error CrowdFund__TimeFailing(string message);
 
 contract Crowdfund {
     event LaunchCampign(
@@ -47,9 +56,12 @@ contract Crowdfund {
         uint32 _startAt,
         uint32 _endAt
     ) external {
-        require(_startAt >= block.timestamp, "start at < now");
-        require(_endAt >= _startAt, "end at < start at");
-        require(_endAt <= block.timestamp + 90 days, "end at > max duration");
+        if (_startAt < block.timestamp)
+            revert CrowdFund__TimeFailing({message: "start at < now"});
+        if (_endAt < _startAt)
+            revert CrowdFund__TimeFailing({message: "end at < start at"});
+        if (_endAt > block.timestamp + 120 days)
+            revert CrowdFund__TimeFailing({message: "end at > max duration"});
         s_campaignCount++;
         s_campaigns[s_campaignCount] = Campaign({
             creator: msg.sender,
@@ -74,12 +86,16 @@ contract Crowdfund {
 
     function pledge(uint256 _id) public payable {
         Campaign storage campaign = s_campaigns[_id];
-        require(block.timestamp >= campaign.startAt, "not started");
-        require(block.timestamp <= campaign.endAt, "ended");
-        require(
-            msg.value >= campaign.minimumContribution,
-            "send more contribution"
-        );
+        if (block.timestamp < campaign.startAt)
+            revert CrowdFund__TimeFailing({message: "not started"});
+        if (block.timestamp > campaign.endAt)
+            revert CrowdFund__TimeFailing({message: "ended"});
+        if (msg.value < campaign.minimumContribution)
+            revert CrowdFund__MinimumContribution({
+                requiered: campaign.minimumContribution,
+                actual: msg.value,
+                message: "send more contribution"
+            });
         campaign.pledged += msg.value;
         s_pledgedAmount[_id][msg.sender] += msg.value;
 
@@ -88,10 +104,18 @@ contract Crowdfund {
 
     function claim(uint256 _id) public {
         Campaign storage campaign = s_campaigns[_id];
-        require(campaign.creator == msg.sender, "not creator");
-        require(block.timestamp > campaign.endAt, "not ended");
-        require(campaign.pledged >= campaign.goal, "pledged < goal");
-        require(!campaign.claimed, "claimed");
+        if (campaign.creator != msg.sender)
+            revert CrowdFund__NotCreator({message: "Not creator"});
+        if (block.timestamp < campaign.endAt)
+            revert CrowdFund__TimeFailing({message: "not ended"});
+        if (campaign.pledged < campaign.goal)
+            revert CrowdFund__NotGoal({
+                pledged: campaign.pledged,
+                goal: campaign.goal,
+                message: "pledged < goal"
+            });
+        if (campaign.claimed)
+            revert CrowdFund__HasClaimed({message: "the campaing was claimed"});
 
         uint256 commission = campaign.goal / 100;
 
@@ -112,16 +136,18 @@ contract Crowdfund {
 
     function cancel(uint256 _id) public {
         Campaign memory campaign = s_campaigns[_id];
-        require(campaign.creator == msg.sender, "not creator");
-        require(block.timestamp < campaign.startAt, "started");
-
+        if (campaign.creator != msg.sender)
+            revert CrowdFund__NotCreator({message: "Not creator"});
+        if (block.timestamp > campaign.startAt)
+            revert CrowdFund__TimeFailing({message: "started"});
         delete s_campaigns[_id];
         emit Cancel(_id);
     }
 
     function unpledge(uint256 _id, uint256 _amount) public {
         Campaign storage campaign = s_campaigns[_id];
-        require(block.timestamp <= campaign.endAt, "ended");
+        if (block.timestamp > campaign.endAt)
+            revert CrowdFund__TimeFailing({message: "ended"});
         campaign.pledged -= _amount;
         s_pledgedAmount[_id][msg.sender] -= _amount;
         (bool success, ) = payable(msg.sender).call{value: _amount}("");
@@ -134,8 +160,10 @@ contract Crowdfund {
 
     function refund(uint256 _id) public {
         Campaign memory campaign = s_campaigns[_id];
-        require(block.timestamp > campaign.endAt, "not ended");
-        require(campaign.pledged < campaign.goal, "pledged >= goal");
+        if (block.timestamp < campaign.endAt)
+            revert CrowdFund__TimeFailing({message: "not ended"});
+        if (campaign.pledged > campaign.goal)
+            revert CrowdFund__TimeFailing({message: "pledged >= goal"});
         uint256 bal = s_pledgedAmount[_id][msg.sender];
         s_pledgedAmount[_id][msg.sender] = 0;
         (bool success, ) = payable(msg.sender).call{value: bal}("");

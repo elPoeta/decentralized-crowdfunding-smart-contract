@@ -29,7 +29,6 @@ import type {
 export interface CrowdfundFactoryInterface extends utils.Interface {
   functions: {
     "createCrowdfund()": FunctionFragment;
-    "getAddressesDeployed()": FunctionFragment;
     "getCrowdfundDeployed()": FunctionFragment;
     "i_owner()": FunctionFragment;
   };
@@ -37,17 +36,12 @@ export interface CrowdfundFactoryInterface extends utils.Interface {
   getFunction(
     nameOrSignatureOrTopic:
       | "createCrowdfund"
-      | "getAddressesDeployed"
       | "getCrowdfundDeployed"
       | "i_owner"
   ): FunctionFragment;
 
   encodeFunctionData(
     functionFragment: "createCrowdfund",
-    values?: undefined
-  ): string;
-  encodeFunctionData(
-    functionFragment: "getAddressesDeployed",
     values?: undefined
   ): string;
   encodeFunctionData(
@@ -58,10 +52,6 @@ export interface CrowdfundFactoryInterface extends utils.Interface {
 
   decodeFunctionResult(
     functionFragment: "createCrowdfund",
-    data: BytesLike
-  ): Result;
-  decodeFunctionResult(
-    functionFragment: "getAddressesDeployed",
     data: BytesLike
   ): Result;
   decodeFunctionResult(
@@ -119,8 +109,6 @@ export interface CrowdfundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<ContractTransaction>;
 
-    getAddressesDeployed(overrides?: CallOverrides): Promise<[string[]]>;
-
     getCrowdfundDeployed(overrides?: CallOverrides): Promise<[string[]]>;
 
     i_owner(overrides?: CallOverrides): Promise<[string]>;
@@ -130,16 +118,12 @@ export interface CrowdfundFactory extends BaseContract {
     overrides?: Overrides & { from?: PromiseOrValue<string> }
   ): Promise<ContractTransaction>;
 
-  getAddressesDeployed(overrides?: CallOverrides): Promise<string[]>;
-
   getCrowdfundDeployed(overrides?: CallOverrides): Promise<string[]>;
 
   i_owner(overrides?: CallOverrides): Promise<string>;
 
   callStatic: {
     createCrowdfund(overrides?: CallOverrides): Promise<void>;
-
-    getAddressesDeployed(overrides?: CallOverrides): Promise<string[]>;
 
     getCrowdfundDeployed(overrides?: CallOverrides): Promise<string[]>;
 
@@ -158,8 +142,6 @@ export interface CrowdfundFactory extends BaseContract {
       overrides?: Overrides & { from?: PromiseOrValue<string> }
     ): Promise<BigNumber>;
 
-    getAddressesDeployed(overrides?: CallOverrides): Promise<BigNumber>;
-
     getCrowdfundDeployed(overrides?: CallOverrides): Promise<BigNumber>;
 
     i_owner(overrides?: CallOverrides): Promise<BigNumber>;
@@ -168,10 +150,6 @@ export interface CrowdfundFactory extends BaseContract {
   populateTransaction: {
     createCrowdfund(
       overrides?: Overrides & { from?: PromiseOrValue<string> }
-    ): Promise<PopulatedTransaction>;
-
-    getAddressesDeployed(
-      overrides?: CallOverrides
     ): Promise<PopulatedTransaction>;
 
     getCrowdfundDeployed(

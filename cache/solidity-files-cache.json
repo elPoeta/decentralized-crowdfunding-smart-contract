@@ -2,8 +2,8 @@
   "_format": "hh-sol-cache-2",
   "files": {
     "/home/elpoeta/workspaces/solidity/decentralized-crowdfunding-smart-contract/contracts/Crowdfund.sol": {
-      "lastModificationDate": 1656337779821,
-      "contentHash": "d206f26a35f25a515f7663a8bdbe992d",
+      "lastModificationDate": 1656341520771,
+      "contentHash": "93963e47800618b79047a7fa9de95e16",
       "sourceName": "contracts/Crowdfund.sol",
       "solcConfig": {
         "version": "0.8.4",

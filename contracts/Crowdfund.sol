@@ -10,7 +10,7 @@ error CrowdFund__MinimumContribution(
     string message
 );
 error CrowdFund__HasClaimed(string message);
-error CrowdFund__NotGoal(uint256 pledged, uint256 goal, string message);
+error CrowdFund__Goal(uint256 pledged, uint256 goal, string message);
 error CrowdFund__TimeFailing(string message);
 error CrowdFund__AmountFail();
 
@@ -110,7 +110,7 @@ contract Crowdfund {
         if (block.timestamp < campaign.endAt)
             revert CrowdFund__TimeFailing({message: "not ended"});
         if (campaign.pledged < campaign.goal)
-            revert CrowdFund__NotGoal({
+            revert CrowdFund__Goal({
                 pledged: campaign.pledged,
                 goal: campaign.goal,
                 message: "pledged < goal"
@@ -166,7 +166,11 @@ contract Crowdfund {
         if (block.timestamp < campaign.endAt)
             revert CrowdFund__TimeFailing({message: "not ended"});
         if (campaign.pledged > campaign.goal)
-            revert CrowdFund__TimeFailing({message: "pledged >= goal"});
+            revert CrowdFund__Goal({
+                pledged: campaign.pledged,
+                goal: campaign.goal,
+                message: "pledged >= goal"
+            });
         uint256 bal = s_pledgedAmount[_id][msg.sender];
         s_pledgedAmount[_id][msg.sender] = 0;
         (bool success, ) = payable(msg.sender).call{value: bal}("");

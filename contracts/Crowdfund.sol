@@ -12,6 +12,7 @@ error CrowdFund__MinimumContribution(
 error CrowdFund__HasClaimed(string message);
 error CrowdFund__NotGoal(uint256 pledged, uint256 goal, string message);
 error CrowdFund__TimeFailing(string message);
+error CrowdFund__AmountFail();
 
 contract Crowdfund {
     event LaunchCampign(
@@ -148,6 +149,8 @@ contract Crowdfund {
         Campaign storage campaign = s_campaigns[_id];
         if (block.timestamp > campaign.endAt)
             revert CrowdFund__TimeFailing({message: "ended"});
+        if (s_pledgedAmount[_id][msg.sender] < _amount)
+            revert CrowdFund__AmountFail();
         campaign.pledged -= _amount;
         s_pledgedAmount[_id][msg.sender] -= _amount;
         (bool success, ) = payable(msg.sender).call{value: _amount}("");

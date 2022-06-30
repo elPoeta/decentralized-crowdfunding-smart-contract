@@ -1,20 +1,20 @@
 import type { NextPage } from 'next'
 import Head from 'next/head'
 
-const Home: NextPage = () => {
+const Launch: NextPage = () => {
   return (
     <>
       <Head>
-        <title>Crowdfund</title>
+        <title>Launch campaing</title>
         <meta name="description" content="Decentralized crowdfunding smart contract" />
         <link rel="icon" href="/favicon.ico" />
       </Head>
 
-      <main>
-      Open Campaigns
-      </main>
+      <div>
+      Launch!
+      </div>
     </>
   )
 }
 
-export default Home
+export default Launch
